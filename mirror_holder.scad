@@ -3,76 +3,82 @@ use<BOSL/transforms.scad>
 use<BOSL/shapes.scad>
 
 include<vars.scad>
+use<mirror_holder.common.scad>
 
 difference()
 {
 	main();
-	inner_tube_hole();
+	
+	cylinder_hole();
+	cylinder_bolt_holes();
+	
+	back(hdr_cyl_d/2+hdr_cvr_sp)
 	mirror_rod_holes();
-	tube_bolt_hole();
+	
+	holder_bolt_holes();
 }
-
-// TODO:
-// y - dimmension
-// inner tube hole - ok
-// mirror rod holes - ok
-// bolt hole m4 (tube)
-// bolt holes m2.5 (holder)
-
-
-// COVER
 
 module main()
 {
-	up(otr_d/2)
-	xcyl(d=otr_d,h=hdr_wth+hdr_cyl_lth,
-		center=false,$fn=otr_fn);
+	up(hdr_cyl_d/2)
+	xcyl(d=hdr_cyl_d,h=hdr_w+hdr_cyl_h,
+		center=false,$fn=hdr_cyl_fn);
 	
-	y=otr_d/2+hdr_cvr_space+hdr_lth;
-	cuboid([hdr_wth,y,hdr_ht/2], 
+	y=hdr_cyl_d/2+hdr_cvr_sp+hdr_l;
+	cuboid([hdr_w,y,hdr_h/2], 
 		align=V_UP+V_BACK+V_RIGHT);
 
-	cuboid([hdr_wth,otr_d/2,hdr_ht], 
+	cuboid([hdr_w,hdr_cyl_d/2,hdr_h], 
 		align=V_UP+V_BACK+V_RIGHT);
 }
 
-module inner_tube_hole()
+module cylinder_hole()
 {
-	d=inr_d+2*hdr_inr_space;
+	d=inr_d1+2*hdr_cyl_sp;
 	
-	up(otr_d/2)
-	right(hdr_wth+hdr_cyl_lth-hdr_inr_wth)
-	xcyl(d=d,h=hdr_inr_wth+1,
+	up(hdr_cyl_d/2)
+	right(hdr_w+hdr_cyl_h-inr_h1)
+	xcyl(d=d,h=inr_h1+1,
 		center=false,$fn=inr_fn);
 }
 
-module mirror_rod_holes()
+module make_cylinder_bolt_hole(d,h,fn)
 {
-	back(otr_d/2+hdr_cvr_space+mr_bl_y_off)
-	up(hdr_ht/2)
-	right(hdr_wth/2)
+	left(1)
+	up(hdr_cyl_d/2)
 	union()
 	{
-		sphere(d=mr_bl_d,$fn=mr_bl_fn);
+		xcyl(d=d,h=h+1,center=false,$fn=fn);
 		
-		ycyl(d=mr_rod_d,h=hdr_lth,
-			center=false,$fn=mr_rod_fn);
+		fwd(inr_bt_off)
+		xcyl(d=d,h=h+1,center=false,$fn=fn);
+		
+		cuboid([h+1,inr_bt_off,d],
+			align=V_RIGHT+V_FWD);
 	}
 }
 
-module tube_bolt_hole()
+module cylinder_bolt_holes()
 {
-	h=hdr_wth+hdr_cyl_lth+2;
-	left(1)
-	up(otr_d/2)
+	make_cylinder_bolt_hole(bt4_d,
+		hdr_w+hdr_cyl_h+1,bt4_fn);
+	
+	make_cylinder_bolt_hole(bt4_hd_d,
+		bt4_hd_h,bt4_hd_fn);
+}
+
+module holder_bolt_holes()
+{
+	back(hdr_cyl_d/2+hdr_cvr_sp)
+	make_holder_bolt_holes()
 	union()
 	{
-		xcyl(d=bt4_d,h=h,center=false,$fn=bt4_fn);
+		down(1)
+		cylinder(d=bt25_cnhd_d,h=bt25_cnhd_h+1,
+			$fn=bt25_cnhd_fn);
 		
-		fwd(inr_bolt_off)
-		xcyl(d=bt4_d,h=h,center=false,$fn=bt4_fn);
-		
-		cuboid([h,inr_bolt_off,bt4_d],
-			align=V_RIGHT+V_FWD);
+		up(bt25_cnhd_h-eps)
+		cylinder(d1=bt25_cnhd_d,d2=bt25_d,
+			h=bt25_cnhd_cnh+eps,$fn=bt25_cnhd_fn);
 	}
 }
